@@ -1,10 +1,11 @@
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import '../models/book.dart';
 import '../models/quiz.dart';
 
 class GeminiService {
-  static final String _apiKey = const String.fromEnvironment('GEMINI_API_KEY', defaultValue: 'AIzaSyD2hlOe5UfS5YpGxkOsSIcwewZrq217g-8');
+  static final String _apiKey = dotenv.env['GEMINI_API_KEY'] ?? '';
   static final model = GenerativeModel(model: 'gemini-1.5-flash', apiKey: _apiKey);
 
   static Future<List<QuizQuestion>> generateQuiz({required Book book, int numQuestions = 5}) async {
