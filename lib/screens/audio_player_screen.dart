@@ -1,9 +1,8 @@
 import 'package:ebook_mvp/utils/app_colors.dart';
 import 'package:ebook_mvp/utils/app_text_style.dart';
-import 'package:ebook_mvp/utils/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
-
+import 'package:go_router/go_router.dart';
 class AudioPlayerScreen extends StatefulWidget {
   final String audioUrl;
   final String title;
@@ -33,19 +32,16 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
     try {
       await _player.setUrl(widget.audioUrl);
 
-      // مدة الملف
       _player.durationStream.listen((d) {
         if (d != null) {
           setState(() => _duration = d);
         }
       });
 
-      // الوقت الحالي
       _player.positionStream.listen((p) {
         setState(() => _position = p);
       });
 
-      // حالة التشغيل
       _player.playerStateStream.listen((state) {
         setState(() => _isPlaying = state.playing);
       });
@@ -62,6 +58,13 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: AppBar(
+        leading: Icon(
+          
+          Icons.arrow_back_ios,
+          color: Colors.white,
+        ),
+      ),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,

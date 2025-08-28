@@ -1,3 +1,4 @@
+import 'package:ebook_mvp/utils/app_text_style.dart';
 import 'package:flutter/material.dart';
 import '../models/book.dart';
 import '../models/quiz.dart';
@@ -26,7 +27,10 @@ class _QuizScreenState extends State<QuizScreen> {
 
   Future<void> _load() async {
     try {
-      final q = await GeminiService.generateQuiz(book: widget.book, numQuestions: 5);
+      final q = await GeminiService.generateQuiz(
+        book: widget.book,
+        numQuestions: 5,
+      );
       setState(() {
         _questions = q;
         _loading = false;
@@ -42,7 +46,13 @@ class _QuizScreenState extends State<QuizScreen> {
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(
+            color: Theme.of(context).primaryColor,
+          ),
+        ),
+      );
     }
     if (_error != null) {
       return Scaffold(
@@ -50,77 +60,235 @@ class _QuizScreenState extends State<QuizScreen> {
         body: Center(child: Text(_error!)),
       );
     }
+
     final questions = _questions!;
     final q = questions[_current];
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Quiz')),
+      appBar: AppBar(
+        title: Text(
+          'Quiz',
+          style: AppTextStyle.withColor(AppTextStyle.bodyLarge, Colors.white),
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Question ${_current + 1}/${questions.length}', style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
-            Text(q.question, style: Theme.of(context).textTheme.titleLarge),
+            Center(
+              child: Text(
+                'Question ${_current + 1}/${questions.length}',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: Theme.of(context).primaryColor,
+                ),
+              ),
+            ),
+            SizedBox(height: 8),
+            // شريط التقدم
+            Center(
+              child: LinearProgressIndicator(
+                value: (_current + 1) / questions.length,
+                backgroundColor: Colors.grey.shade300,
+                color: Theme.of(context).primaryColor,
+                borderRadius: BorderRadius.circular(16),
+                minHeight: 6,
+              ),
+            ),
             const SizedBox(height: 16),
-            ...q.choices.map((c) => RadioListTile<String>(
-                  value: c,
-                  groupValue: _answers[_current],
-                  title: Text(c),
-                  onChanged: (v) => setState(() => _answers[_current] = v!),
-                )),
+
+            Text(
+              q.question,
+              style: AppTextStyle.withColor(AppTextStyle.h3, Colors.black),
+            ),
+            const SizedBox(height: 16),
+            // الاختيارات
+            // الاختيارات كـ ElevatedButton
+            Column(
+              children: q.choices.map((c) {
+                final isSelected = _answers[_current] == c;
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isSelected
+                          ? Colors.orange
+                          : Colors.grey[200],
+                      foregroundColor: isSelected ? Colors.white : Colors.black,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 14,
+                        horizontal: 20,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _answers[_current] = c;
+                      });
+                    },
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        c,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+
             const Spacer(),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                TextButton(
-                  onPressed: _current > 0 ? () => setState(() => _current--) : null,
-                  child: const Text('Back'),
+                ElevatedButton(
+                  onPressed: _current > 0
+                      ? () => setState(() => _current--)
+                      : null,
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: 18,horizontal: 20),
+                    backgroundColor: Colors.grey,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadiusGeometry.circular(18),
+                    ),
+                  ),
+                  child: Text(
+                    'Précédent',
+                    style: AppTextStyle.withColor(
+                      AppTextStyle.buttonLarge,
+                      Colors.white,
+                    ),
+                  ),
                 ),
-                FilledButton(
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                    padding: EdgeInsets.symmetric(vertical: 18,horizontal: 20),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadiusGeometry.circular(16),
+                    ),
+                  ),
                   onPressed: _current < questions.length - 1
                       ? () => setState(() => _current++)
                       : _answers.length == questions.length
-                          ? _showResult
-                          : null,
-                  child: Text(_current < questions.length - 1 ? 'Next' : 'Submit'),
+                      ? _showResultScreen
+                      : null,
+                  child: Text(
+                    _current < questions.length - 1 ? 'Suivant' : 'Submit',
+
+                    style: AppTextStyle.withColor(
+                      AppTextStyle.buttonLarge,
+                      Colors.black,
+                    ),
+                  ),
                 ),
               ],
-            )
+            ),
           ],
         ),
       ),
     );
   }
 
-  void _showResult() {
+  void _showResultScreen() {
     final questions = _questions!;
     int correct = 0;
     for (int i = 0; i < questions.length; i++) {
       if (_answers[i] == questions[i].correctAnswer) correct++;
     }
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Results'),
-        content: Text('You scored $correct / ${questions.length}'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              setState(() {
-                _current = 0;
-                _answers.clear();
-              });
-            },
-            child: const Text('Retry'),
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => Scaffold(
+          appBar: AppBar(title: const Text('Résultats du Quiz')),
+          body: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                SizedBox(
+                  width: 120,
+                  height: 120,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      CircularProgressIndicator(
+                        value: correct / questions.length,
+                        strokeWidth: 10,
+                        color: Colors.orange,
+                        backgroundColor: Colors.grey.shade300,
+                      ),
+                      Center(
+                        child: Text(
+                          '$correct/${questions.length}',
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  correct == questions.length
+                      ? 'Excellent travail ! Vous avez réussi le quiz.'
+                      : 'Vous avez terminé le quiz.',
+                  style: TextStyle(
+                    color: correct == questions.length
+                        ? Colors.green
+                        : Colors.black,
+                    fontSize: 16,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: questions.length,
+                    itemBuilder: (_, i) {
+                      final q = questions[i];
+                      final userAnswer = _answers[i]!;
+                      final correctAnswer = q.correctAnswer;
+                      final isCorrect = userAnswer == correctAnswer;
+                      return Card(
+                        margin: const EdgeInsets.symmetric(vertical: 6),
+                        child: ListTile(
+                          title: Text(q.question),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 4),
+                              Text(
+                                'Votre réponse: $userAnswer',
+                                style: TextStyle(
+                                  color: isCorrect ? Colors.green : Colors.red,
+                                ),
+                              ),
+                              if (!isCorrect)
+                                Text(
+                                  'Réponse correcte: $correctAnswer',
+                                  style: const TextStyle(color: Colors.green),
+                                ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
-          ),
-        ],
+        ),
       ),
     );
   }

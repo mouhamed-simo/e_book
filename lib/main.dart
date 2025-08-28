@@ -24,8 +24,9 @@ class EBookApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    
     final router = GoRouter(
-      initialLocation: '/quiz',
+      initialLocation: '/splash',
       routes: [
         GoRoute(
           path: '/splash',
