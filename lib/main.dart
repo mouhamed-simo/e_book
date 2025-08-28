@@ -1,3 +1,4 @@
+import 'package:ebook_mvp/utils/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -24,7 +25,7 @@ class EBookApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final router = GoRouter(
-      initialLocation: '/splash',
+      initialLocation: '/quiz',
       routes: [
         GoRoute(
           path: '/splash',
@@ -52,7 +53,10 @@ class EBookApp extends StatelessWidget {
           path: '/audio',
           builder: (context, state) {
             final url = state.uri.queryParameters['url']!;
+            // final url =
+            // "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3";
             final title = state.uri.queryParameters['title'] ?? 'Audio';
+            // final title = "The Art of Mindful Living";
             return AudioPlayerScreen(audioUrl: url, title: title);
           },
         ),
@@ -68,10 +72,7 @@ class EBookApp extends StatelessWidget {
 
     return MaterialApp.router(
       title: 'E‑Book MVP',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
-        useMaterial3: true,
-      ),
+      theme: AppTheme.light,
       routerConfig: router,
     );
   }
