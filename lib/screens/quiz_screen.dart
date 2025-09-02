@@ -1,8 +1,14 @@
+import 'package:ebook_mvp/screens/book_details_screen.dart';
+import 'package:ebook_mvp/screens/reader_screen.dart';
+import 'package:ebook_mvp/screens/splash_screen.dart';
+import 'package:ebook_mvp/utils/app_colors.dart';
 import 'package:ebook_mvp/utils/app_text_style.dart';
 import 'package:flutter/material.dart';
 import '../models/book.dart';
 import '../models/quiz.dart';
 import '../services/gemini_service.dart';
+
+import 'package:get/get.dart';
 
 class QuizScreen extends StatefulWidget {
   final Book book;
@@ -87,7 +93,6 @@ class _QuizScreenState extends State<QuizScreen> {
               ),
             ),
             SizedBox(height: 8),
-            // شريط التقدم
             Center(
               child: LinearProgressIndicator(
                 value: (_current + 1) / questions.length,
@@ -104,8 +109,7 @@ class _QuizScreenState extends State<QuizScreen> {
               style: AppTextStyle.withColor(AppTextStyle.h3, Colors.black),
             ),
             const SizedBox(height: 16),
-            // الاختيارات
-            // الاختيارات كـ ElevatedButton
+           
             Column(
               children: q.choices.map((c) {
                 final isSelected = _answers[_current] == c;
@@ -154,7 +158,7 @@ class _QuizScreenState extends State<QuizScreen> {
                       ? () => setState(() => _current--)
                       : null,
                   style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: 18,horizontal: 20),
+                    padding: EdgeInsets.symmetric(vertical: 18, horizontal: 20),
                     backgroundColor: Colors.grey,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadiusGeometry.circular(18),
@@ -171,7 +175,7 @@ class _QuizScreenState extends State<QuizScreen> {
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.orange,
-                    padding: EdgeInsets.symmetric(vertical: 18,horizontal: 20),
+                    padding: EdgeInsets.symmetric(vertical: 18, horizontal: 20),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadiusGeometry.circular(16),
                     ),
@@ -208,86 +212,214 @@ class _QuizScreenState extends State<QuizScreen> {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => Scaffold(
-          appBar: AppBar(title: const Text('Résultats du Quiz')),
-          body: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                SizedBox(
-                  width: 120,
-                  height: 120,
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      CircularProgressIndicator(
-                        value: correct / questions.length,
-                        strokeWidth: 10,
-                        color: Colors.orange,
-                        backgroundColor: Colors.grey.shade300,
-                      ),
-                      Center(
-                        child: Text(
-                          '$correct/${questions.length}',
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  correct == questions.length
-                      ? 'Excellent travail ! Vous avez réussi le quiz.'
-                      : 'Vous avez terminé le quiz.',
-                  style: TextStyle(
-                    color: correct == questions.length
-                        ? Colors.green
-                        : Colors.black,
-                    fontSize: 16,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: questions.length,
-                    itemBuilder: (_, i) {
-                      final q = questions[i];
-                      final userAnswer = _answers[i]!;
-                      final correctAnswer = q.correctAnswer;
-                      final isCorrect = userAnswer == correctAnswer;
-                      return Card(
-                        margin: const EdgeInsets.symmetric(vertical: 6),
-                        child: ListTile(
-                          title: Text(q.question),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const SizedBox(height: 4),
-                              Text(
-                                'Votre réponse: $userAnswer',
-                                style: TextStyle(
-                                  color: isCorrect ? Colors.green : Colors.red,
-                                ),
-                              ),
-                              if (!isCorrect)
-                                Text(
-                                  'Réponse correcte: $correctAnswer',
-                                  style: const TextStyle(color: Colors.green),
-                                ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
+          appBar: AppBar(
+            title: Text(
+              'Résultats du Quiz',
+              style: AppTextStyle.withColor(AppTextStyle.h1, Colors.white),
             ),
           ),
+          body: Padding(
+            padding: const EdgeInsets.all(16),
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  SizedBox(
+                    width: 120,
+                    height: 120,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        CircularProgressIndicator(
+                          value: correct / questions.length,
+                          strokeWidth: 10,
+                          color: Theme.of(context).primaryColor,
+                          backgroundColor: Colors.grey.shade300,
+                        ),
+                        Container(
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Theme.of(
+                              context,
+                            ).primaryColor.withOpacity(0.1),
+                          ),
+                          child: Center(
+                            child: Text(
+                              '$correct/${questions.length}',
+                              style: AppTextStyle.withColor(
+                                AppTextStyle.withWeight(
+                                  AppTextStyle.h1,
+                                  FontWeight.bold,
+                                ),
+                                Colors.black,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    width: double.infinity,
+                    height: 74,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(15),
+                      color: AppColors.green.withOpacity(0.1),
+                      border: Border.all(color: AppColors.green, width: 1),
+                    ),
+              
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.done_outline_rounded,
+                          color: AppColors.green,
+                          size: 16,
+                        ),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Excellent travail ! Vous avez réussi le quiz.',
+              
+                            style: AppTextStyle.withColor(
+                              AppTextStyle.bodyMeduim,
+                              AppColors.green,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: questions.length,
+                      itemBuilder: (_, i) {
+                        final q = questions[i];
+                        final userAnswer = _answers[i]!;
+                        final correctAnswer = q.correctAnswer;
+                        final isCorrect = userAnswer == correctAnswer;
+                        return Card(
+                          color: Colors.white,
+                          margin: const EdgeInsets.symmetric(vertical: 6),
+                          child: ListTile(
+                            title: Text(
+                              q.question,
+                              style: AppTextStyle.withColor(
+                                AppTextStyle.bodyMeduim,
+                                Colors.black,
+                              ),
+                            ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 4),
+                                Container(
+                                  width: double.infinity,
+                                  padding: EdgeInsets.all(15),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(12),
+                                    color: AppColors.greyOpacity,
+                                  ),
+                                  child: Text(
+                                    'Votre réponse: $userAnswer',
+                                    style: AppTextStyle.withColor(
+                                      AppTextStyle.bodySmall,
+                                      AppColors.grey,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(height: 8),
+                                if (!isCorrect)
+                                  Text(
+                                    'Réponse correcte: $correctAnswer',
+                                    style: AppTextStyle.withColor(
+                                      AppTextStyle.bodySmall,
+                                      AppColors.accent,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            trailing: Icon(
+                              isCorrect
+                                  ? Icons.done_rounded
+                                  : Icons.close_rounded,
+                              color: isCorrect ? AppColors.green : Colors.red,
+                            ),
+                            
+                          ),
+                          
+                        );
+                      },
+                      
+                    ),
+                  ),
+              
+                  SizedBox(height: 14),
+                  ElevatedButton(
+                    
+                    onPressed: () {
+                      setState(() {
+                        _current = 0;
+                        _answers.clear();
+                      });
+                      Navigator.pop(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: 20,horizontal: 20),
+                      backgroundColor: AppColors.accent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(13),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.refresh, color: Colors.white),
+                        SizedBox(width: 5),
+                        Text(
+                          'Refaire le Quiz',
+                          style: AppTextStyle.withColor(
+                            AppTextStyle.buttonMeduim,
+                            Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 14),
+                  ElevatedButton(
+                    onPressed: () {
+                  
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: 20,horizontal: 20),
+                      backgroundColor: AppColors.primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(13),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.book, color: Colors.white),
+                        SizedBox(width: 5),
+                        Text(
+                          'Retour au Livre',
+                          style: AppTextStyle.withColor(
+                            AppTextStyle.buttonMeduim,
+                            Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                
+              ),
+            ),
+          ),
+          
         ),
       ),
     );
